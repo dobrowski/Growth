@@ -81,11 +81,16 @@ con <- MCOE::mcoe_sql_con()
 growth <- read_sheet("https://docs.google.com/spreadsheets/d/1U6vCQiIaEGCrAGWbfDAFPPJQz8rOAbZXnIbwtze_h2Y/edit?gid=0#gid=0")
 
 
+growth.no.charter <- growth %>%
+    filter(Charter == FALSE)
+
+
+
 pal <- c("Above" = "#8dd3c7", "Typical" = "#ffffb3", "Below" = "#bebada")
 
-student.growth <- function(grouper = "All", ass = "ELA") {
+student.growth <- function(df, grouper = "All", ass = "ELA") {
     
-    growth %>% 
+    df %>% 
         filter(Assessment == ass,
                str_detect(`Student Group` , grouper)
                ) %>%
@@ -109,10 +114,27 @@ student.growth("Filipino", "ELA")
 
 
 
-lea.growth <- function(dist, ass = "ELA") {
+for (i in unique(growth$`Student Group`)) {
+    
+    for (j in unique(growth$Assessment)) {
+        
+        student.growth(growth.no.charter, i, ass = j)
+        
+        ggsave(here("output",paste0(i, " ",j," growth ",Sys.Date(),".png") ),
+               width = 8,
+               height = 4.5 )
+        
+    }
+    
+}
+
+
+
+
+lea.growth <- function(df, dist, ass = "ELA") {
     
 
-growth %>% 
+df %>% 
     filter(Assessment == ass,
            str_detect(LEA,dist)
            ) %>%
@@ -136,3 +158,17 @@ lea.growth("Carmel", ass = "Math")
 lea.growth("Mission")
 
 lea.growth("Soledad")
+
+for (i in unique(growth$LEA)) {
+    
+    for (j in unique(growth$Assessment)) {
+     
+        lea.growth(i, ass = j)
+        
+        ggsave(here("output",paste0(i, " ",j," growth ",Sys.Date(),".png") ),
+                    width = 8,
+                    height = 4.5 )
+           
+    }
+    
+}
